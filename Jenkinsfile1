@@ -8,21 +8,22 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Set Up Virtual Environment') {
             steps {
-                sh 'pip3 install -r requirements.txt'
+                sh 'python3 -m venv venv'
+                sh './venv/bin/pip install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'pytest tests/'
+                sh './venv/bin/pytest tests/'
             }
         }
 
         stage('Build Artifact') {
             steps {
-                sh 'python3 setup.py sdist'
+                sh './venv/bin/python setup.py sdist'
             }
         }
 
