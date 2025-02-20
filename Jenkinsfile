@@ -1,24 +1,45 @@
 pipeline {
     agent any
+ 
     stages {
         stage('Clone Repository') {
             steps {
-                git url: 'https://github.com/kirthiksubbiah/jenkins.git',branch: 'main'
+                git url: 'https://github.com/kirthiksubbiah/jenkins.git', branch: 'main
             }
         }
-        stage('Build') {
+ 
+        stage('Set Up Virtual Environment') {
             steps {
-                sh 'echo "Building the application..."'
+                // Ensure python3-venv is available
+                sh 'python3 -m venv venv'
+                sh '. venv/bin/activate' // Activate the virtual environment
             }
         }
-        stage('Test') {
+ 
+        stage('Install Dependencies') {
             steps {
-                sh 'echo "Running tests..."'
+                // Install dependencies inside the virtual environment
+                sh '. venv/bin/activate && pip install -r requirements.txt'
             }
         }
-        stage('Deploy') {
+ 
+        stage('Run Tests') {
             steps {
-                sh 'echo "Deploying application..."'
+                // Run tests inside the virtual environment
+                sh '. venv/bin/activate && PYTHONPATH=$PWD pytest test/'
+            }
+        }
+ 
+        stage('Build Artifact') {
+            steps {
+                // Build the artifact inside the virtual environment
+                sh '. venv/bin/activate && python setup.py sdist'
+            }
+        }
+ 
+        stage('Archive Artifact') {
+            steps {
+                archiveArtifacts artifacts: 'dist/*.tar.gz', fingerprint: true
             }
         }
     }
